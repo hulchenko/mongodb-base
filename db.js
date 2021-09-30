@@ -23,12 +23,8 @@ const connect = (callback) => {
   }
 };
 
-const getPrimaryKey = (_id) => {
-  return ObjectID(_id);
-};
-
 const getDB = () => {
   return state.db;
 };
 
-module.exports = { connect, getPrimaryKey, getDB };
+module.exports = { connect, getDB };

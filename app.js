@@ -1,6 +1,6 @@
 //imports
 const express = require('express');
-const mongodb = require('./mongodb');
+const db = require('./db');
 const bodyParser = require('body-parser');
 const app = express();
 app.use(express.json());
@@ -12,7 +12,6 @@ app.use(
 const path = require('path');
 const collection = 'users';
 const port = 3000;
-//make sure mongoDB is installed locally
 
 // HTML page to render on the endpoint
 app.get('/', (req, res) => {
@@ -20,10 +19,9 @@ app.get('/', (req, res) => {
 });
 
 // fetch existing data
-app.get('/getUsers', (req, res) => {
+app.get('/users', (req, res) => {
   // receive json data
-  mongodb
-    .getDB()
+  db.getDB()
     .collection(collection)
     .find({})
     .toArray((err, users) => {
@@ -35,29 +33,25 @@ app.get('/getUsers', (req, res) => {
     });
 });
 
-// update
-app.put('/:id', (req, res) => {
-  // Primary Key of user to update
-  const userID = req.params.id;
-  // string used to update
-  const userInput = req.body;
-  mongodb
-    .getDB()
+// create new data
+app.post('/', (req, res, next) => {
+  // Document to be inserted
+  const newUser = req.body;
+  db.getDB()
     .collection(collection)
-    .findOneAndUpdate(
-      { _id: mongodb.getPrimaryKey(userID) },
-      { $set: { user: userInput.user } },
-      { returnOriginal: false },
-      (err, result) => {
-        if (err) console.log(err);
-        else {
-          res.json(result);
-        }
+    .insertOne(newUser, (err, result) => {
+      if (err) {
+        console.log(`ERROR CREATING NEW USER`, err);
+      } else {
+        console.log(result);
+        res.json({
+          result: result,
+        });
       }
-    );
+    });
 });
 
-mongodb.connect((error) => {
+db.connect((error) => {
   if (error) {
     console.log(`ERROR CONNECTING`, error);
   } else {
